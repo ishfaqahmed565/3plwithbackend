@@ -79,11 +79,13 @@
                 @enderror
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Product Image (Optional)</label>
-                <input type="file" name="product_image" accept="image/*"
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Images / PDF Documents (Optional)</label>
+                <input type="file" name="attachments[]" id="client-attachments" multiple accept="image/*,application/pdf"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <p class="text-sm text-gray-500 mt-1">JPG, PNG (Max: 2MB)</p>
+                <p class="text-sm text-gray-500 mt-1">Upload multiple images or PDFs (Max: 5MB each)</p>
+
+                <div id="client-attachments-preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
         </div>
         
@@ -97,4 +99,60 @@
         </div>
     </form>
 </div>
+
+<script>
+    (function () {
+        const input = document.getElementById('client-attachments');
+        const preview = document.getElementById('client-attachments-preview');
+
+        if (!input || !preview) {
+            return;
+        }
+
+        const renderPreview = (files) => {
+            preview.innerHTML = '';
+
+            files.forEach((file, index) => {
+                const card = document.createElement('div');
+                card.className = 'border rounded-lg p-3 bg-gray-50 relative';
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'absolute top-2 right-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded';
+                removeButton.textContent = 'Remove';
+                removeButton.addEventListener('click', () => {
+                    const dt = new DataTransfer();
+                    files.filter((_, i) => i !== index).forEach((f) => dt.items.add(f));
+                    input.files = dt.files;
+                    renderPreview(Array.from(input.files));
+                });
+
+                const title = document.createElement('p');
+                title.className = 'text-sm font-medium text-gray-700 mb-2 break-all';
+                title.textContent = file.name;
+
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.className = 'w-full h-40 object-cover rounded';
+                    img.src = URL.createObjectURL(file);
+                    img.onload = () => URL.revokeObjectURL(img.src);
+                    card.appendChild(img);
+                } else {
+                    const pdfBadge = document.createElement('div');
+                    pdfBadge.className = 'flex items-center justify-center h-40 bg-white border border-dashed rounded text-sm text-gray-600';
+                    pdfBadge.textContent = 'PDF Document';
+                    card.appendChild(pdfBadge);
+                }
+
+                card.appendChild(title);
+                card.appendChild(removeButton);
+                preview.appendChild(card);
+            });
+        };
+
+        input.addEventListener('change', () => {
+            renderPreview(Array.from(input.files));
+        });
+    })();
+</script>
 @endsection

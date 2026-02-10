@@ -21,7 +21,7 @@ class ScanController extends Controller
     // View Shipment Details
     public function showShipment($id)
     {
-        $shipment = Shipment::with(['client', 'rackLocation', 'orders'])->findOrFail($id);
+        $shipment = Shipment::with(['client', 'rackLocation', 'orders', 'attachments', 'lineItems'])->findOrFail($id);
         return view('agent.shipments.show', compact('shipment'));
     }
 
@@ -57,7 +57,10 @@ class ScanController extends Controller
             'received_quantity' => 'required|integer|min:1',
             'product_condition' => 'required|in:excellent,good,fair,damaged',
             'scan1_notes' => 'nullable|string|max:1000',
-            'scan1_image' => 'required|image|max:5120',
+            'scan1_files' => 'required|array|min:1',
+            'scan1_files.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'line_items' => 'nullable|array',
+            'line_items.*' => 'nullable|string|max:255',
         ]);
 
         $shipment = Shipment::where('tracking_id', $validated['tracking_id'])->firstOrFail();
@@ -72,7 +75,8 @@ class ScanController extends Controller
             $validated['received_quantity'],
             $validated['product_condition'],
             $validated['scan1_notes'] ?? null,
-            $request->file('scan1_image')
+            $request->file('scan1_files', []),
+            $validated['line_items'] ?? []
         );
 
         return redirect()->route('agent.dashboard')->with('success', 'Scan-1 Complete: Shipment ' . $shipment->shipment_code . ' received and verified!');

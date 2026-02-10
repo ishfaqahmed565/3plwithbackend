@@ -94,15 +94,21 @@
     </div>
     @endif
     
-    @if($shipment->product_image_path)
+    @if($shipment->attachments->where('context', 'client_upload')->count())
     <div class="mb-6">
-        <h3 class="text-sm font-medium text-gray-500 mb-2">Product Image (Uploaded by Client)</h3>
-        <a href="{{ Storage::url($shipment->product_image_path) }}" target="_blank" class="block group">
-            <img src="{{ Storage::url($shipment->product_image_path) }}" 
-                 alt="Shipment Image" 
-                 class="max-w-2xl rounded-lg shadow-lg border-2 border-purple-200 group-hover:border-purple-400 transition">
-            <p class="text-xs text-center text-gray-600 mt-2 group-hover:text-purple-700">Click to view full size</p>
-        </a>
+        <h3 class="text-sm font-medium text-gray-500 mb-2">Client Attachments</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($shipment->attachments->where('context', 'client_upload') as $attachment)
+                <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="border rounded-lg p-3 bg-gray-50 hover:border-purple-400 transition">
+                    <p class="text-sm font-medium text-gray-700 mb-2 break-all">{{ $attachment->original_name }}</p>
+                    @if(str_starts_with($attachment->mime_type, 'image/'))
+                        <img src="{{ Storage::url($attachment->file_path) }}" alt="Attachment" class="w-full h-40 object-cover rounded">
+                    @else
+                        <div class="flex items-center justify-center h-40 bg-white border border-dashed rounded text-sm text-gray-600">PDF Document</div>
+                    @endif
+                </a>
+            @endforeach
+        </div>
     </div>
     @endif
     
@@ -171,21 +177,43 @@
             </div>
             
             <div>
-                @if($shipment->scan1_image_path)
+                @if($shipment->attachments->where('context', 'scan1_proof')->count())
                 <div>
                     <dt class="text-sm font-medium text-gray-700 mb-2">Proof of Receipt</dt>
                     <dd>
-                        <a href="{{ Storage::url($shipment->scan1_image_path) }}" target="_blank" class="block group">
-                            <img src="{{ Storage::url($shipment->scan1_image_path) }}" 
-                                 alt="Scan-1 Proof" 
-                                 class="w-full rounded-lg shadow-lg border-2 border-green-300 group-hover:border-green-500 transition">
-                            <p class="text-xs text-center text-gray-600 mt-2 group-hover:text-green-700">Click to view full size</p>
-                        </a>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach($shipment->attachments->where('context', 'scan1_proof') as $attachment)
+                                <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="block border rounded-lg p-3 bg-white hover:border-green-400 transition">
+                                    <p class="text-xs text-gray-600 mb-2 break-all">{{ $attachment->original_name }}</p>
+                                    @if(str_starts_with($attachment->mime_type, 'image/'))
+                                        <img src="{{ Storage::url($attachment->file_path) }}"
+                                             alt="Scan-1 Proof"
+                                             class="w-full h-40 object-cover rounded">
+                                    @else
+                                        <div class="flex items-center justify-center h-40 bg-gray-50 border border-dashed rounded text-sm text-gray-600">PDF Document</div>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
                     </dd>
                 </div>
                 @endif
             </div>
         </div>
+    </div>
+    @endif
+
+    @if($shipment->lineItems->count())
+    <div class="border-t pt-6">
+        <h3 class="text-sm font-medium text-gray-500 mb-3">Line Items (Scanned Barcodes)</h3>
+        <ul class="space-y-2">
+            @foreach($shipment->lineItems as $item)
+                <li class="flex items-center justify-between bg-gray-50 border rounded-lg px-4 py-3">
+                    <span class="font-mono text-sm text-gray-900">{{ $item->barcode }}</span>
+                    <a href="{{ $item->lookup_url }}" target="_blank" class="text-purple-600 hover:text-purple-800 text-sm font-semibold">Open Barcode Lookup</a>
+                </li>
+            @endforeach
+        </ul>
     </div>
     @endif
     

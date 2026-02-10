@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ShipmentAttachment;
+use App\Models\ShipmentLineItem;
 
 class Shipment extends Model
 {
@@ -47,6 +49,16 @@ class Shipment extends Model
     public function rackLocation(): BelongsTo
     {
         return $this->belongsTo(RackLocation::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ShipmentAttachment::class);
+    }
+
+    public function lineItems(): HasMany
+    {
+        return $this->hasMany(ShipmentLineItem::class);
     }
 
     // Business Logic

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\SettlementController as AdminSettlementController
 use App\Http\Controllers\Client\AuthController as ClientAuthController;
 use App\Http\Controllers\Client\ShipmentController as ClientShipmentController;
 use App\Http\Controllers\Client\OrderController as ClientOrderController;
+use App\Http\Controllers\Auth\UnifiedLoginController;
 use App\Http\Controllers\Agent\AuthController as AgentAuthController;
 use App\Http\Controllers\Agent\DashboardController as AgentDashboardController;
 use App\Http\Controllers\Agent\ScanController as AgentScanController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Agent\ScanController as AgentScanController;
 Route::get('/', function () {
     return view('welcome-backup');
 });
+Route::post('/login', [UnifiedLoginController::class, 'login'])->name('login');
 
 // Admin Routes
 Route::prefix('admin')->group(function () {
@@ -81,6 +83,8 @@ Route::prefix('client')->group(function () {
             'create' => 'client.shipments.create',
             'store' => 'client.shipments.store',
             'show' => 'client.shipments.show',
+            'edit' => 'client.shipments.edit',
+            'update' => 'client.shipments.update',
         ]);
         
         // Order Management

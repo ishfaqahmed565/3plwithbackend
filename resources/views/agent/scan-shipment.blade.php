@@ -132,7 +132,7 @@
             <div class="mb-6">
                 <label for="received_quantity" class="block text-sm font-medium text-gray-700 mb-2">Verify Received Quantity *</label>
                 <input type="number" name="received_quantity" id="received_quantity" required min="1"
-                    value="{{ old('received_quantity', $shipment->total_quantity) }}"
+                    value="{{ old('received_quantity', $shipment->quantity_total) }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                 @error('received_quantity')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -166,13 +166,26 @@
             </div>
             
             <div class="mb-6">
-                <label for="scan1_image" class="block text-sm font-medium text-gray-700 mb-2">Proof Image *</label>
-                <input type="file" name="scan1_image" id="scan1_image" required accept="image/*"
+                <label for="scan1_files" class="block text-sm font-medium text-gray-700 mb-2">Proof Files *</label>
+                <input type="file" name="scan1_files[]" id="scan1_files" required multiple accept="image/*,application/pdf"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                @error('scan1_image')
+                @error('scan1_files')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                 @enderror
-                <p class="text-sm text-gray-500 mt-1">Upload photo of received shipment as proof</p>
+                @error('scan1_files.*')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+                <p class="text-sm text-gray-500 mt-1">Upload multiple images or PDFs as proof</p>
+                <div id="scan1-files-preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-gray-700">Line Items (Barcodes)</label>
+                    <button type="button" id="add-line-item" class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded">+ Add Item</button>
+                </div>
+                <div id="line-items-container" class="space-y-3"></div>
+                <p class="text-sm text-gray-500 mt-1">Scan or enter barcode values to create line items.</p>
             </div>
             
             <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
@@ -192,4 +205,93 @@
     </div>
     @endif
 </div>
+
+<script>
+    (function () {
+        const scanInput = document.getElementById('scan1_files');
+        const preview = document.getElementById('scan1-files-preview');
+        const addLineItemButton = document.getElementById('add-line-item');
+        const lineItemsContainer = document.getElementById('line-items-container');
+
+        if (scanInput && preview) {
+            const renderPreview = (files) => {
+                preview.innerHTML = '';
+
+                files.forEach((file, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'border rounded-lg p-3 bg-gray-50 relative';
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'absolute top-2 right-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded';
+                    removeButton.textContent = 'Remove';
+                    removeButton.addEventListener('click', () => {
+                        const dt = new DataTransfer();
+                        files.filter((_, i) => i !== index).forEach((f) => dt.items.add(f));
+                        scanInput.files = dt.files;
+                        renderPreview(Array.from(scanInput.files));
+                    });
+
+                    const title = document.createElement('p');
+                    title.className = 'text-sm font-medium text-gray-700 mb-2 break-all';
+                    title.textContent = file.name;
+
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.className = 'w-full h-40 object-cover rounded';
+                        img.src = URL.createObjectURL(file);
+                        img.onload = () => URL.revokeObjectURL(img.src);
+                        card.appendChild(img);
+                    } else {
+                        const pdfBadge = document.createElement('div');
+                        pdfBadge.className = 'flex items-center justify-center h-40 bg-white border border-dashed rounded text-sm text-gray-600';
+                        pdfBadge.textContent = 'PDF Document';
+                        card.appendChild(pdfBadge);
+                    }
+
+                    card.appendChild(title);
+                    card.appendChild(removeButton);
+                    preview.appendChild(card);
+                });
+            };
+
+            scanInput.addEventListener('change', () => {
+                renderPreview(Array.from(scanInput.files));
+            });
+        }
+
+        const addLineItemRow = (value = '') => {
+            if (!lineItemsContainer) {
+                return;
+            }
+
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-3';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'line_items[]';
+            input.value = value;
+            input.placeholder = 'Scan barcode...';
+            input.className = 'flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500';
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'text-sm bg-red-100 text-red-700 px-3 py-2 rounded';
+            removeButton.textContent = 'Remove';
+            removeButton.addEventListener('click', () => {
+                row.remove();
+            });
+
+            row.appendChild(input);
+            row.appendChild(removeButton);
+            lineItemsContainer.appendChild(row);
+        };
+
+        if (addLineItemButton && lineItemsContainer) {
+            addLineItemButton.addEventListener('click', () => addLineItemRow());
+            addLineItemRow();
+        }
+    })();
+</script>
 @endsection

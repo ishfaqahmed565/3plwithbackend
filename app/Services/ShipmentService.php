@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Models\Shipment;
+use App\Models\ShipmentAttachment;
+use App\Models\ShipmentLineItem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 
 class ShipmentService
 {
-    public function createShipment(array $data, ?UploadedFile $image = null): Shipment
+    public function createShipment(array $data, ?UploadedFile $image = null, array $attachments = []): Shipment
     {
         // Generate unique shipment code
         $data['shipment_code'] = 'SHP-' . strtoupper(uniqid());
@@ -21,7 +23,13 @@ class ShipmentService
             $data['product_image_path'] = $path;
         }
 
-        return Shipment::create($data);
+        $shipment = Shipment::create($data);
+
+        if (!empty($attachments)) {
+            $this->storeAttachments($shipment, $attachments, 'client', 'client_upload');
+        }
+
+        return $shipment;
     }
 
     public function receiveShipment(Shipment $shipment): Shipment
@@ -36,11 +44,9 @@ class ShipmentService
         int $receivedQuantity,
         string $productCondition,
         ?string $notes,
-        $proofImage
+        array $proofFiles = [],
+        array $barcodes = []
     ): Shipment {
-        // Upload proof image
-        $imagePath = $proofImage->store('scan1-proofs', 'public');
-        
         // Update shipment with verification details
         $shipment->update([
             'status' => 'received_in_warehouse',
@@ -49,11 +55,49 @@ class ShipmentService
             'received_quantity' => $receivedQuantity,
             'product_condition' => $productCondition,
             'scan1_notes' => $notes,
-            'scan1_image_path' => $imagePath,
             'quantity_available' => $receivedQuantity, // Use received quantity as available
         ]);
+
+        if (!empty($proofFiles)) {
+            $this->storeAttachments($shipment, $proofFiles, 'agent', 'scan1_proof');
+        }
+
+        if (!empty($barcodes)) {
+            foreach ($barcodes as $barcode) {
+                $barcodeValue = trim($barcode);
+                if ($barcodeValue === '') {
+                    continue;
+                }
+
+                ShipmentLineItem::create([
+                    'shipment_id' => $shipment->id,
+                    'barcode' => $barcodeValue,
+                    'lookup_url' => 'https://www.barcodelookup.com/' . $barcodeValue,
+                ]);
+            }
+        }
         
         return $shipment->fresh();
+    }
+
+    public function storeAttachments(Shipment $shipment, array $files, string $uploadedBy, string $context): void
+    {
+        foreach ($files as $file) {
+            if (!$file instanceof UploadedFile) {
+                continue;
+            }
+
+            $path = $file->store('shipment-attachments', 'public');
+
+            ShipmentAttachment::create([
+                'shipment_id' => $shipment->id,
+                'uploaded_by' => $uploadedBy,
+                'context' => $context,
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getClientMimeType(),
+            ]);
+        }
     }
 
     public function getClientShipments(int $clientId)
