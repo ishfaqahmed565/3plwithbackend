@@ -7,12 +7,7 @@
     $title = 'Shipment Details';
     $userName = auth('agent')->user()->name;
     $logoutRoute = route('agent.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('agent.dashboard'), 'active' => false],
-        ['label' => 'Scan-1 (Shipment)', 'url' => route('agent.scan.shipment'), 'active' => false],
-        ['label' => 'Scan-2 (Prep)', 'url' => route('agent.scan.order-prep'), 'active' => false],
-        ['label' => 'Scan-3 (Handover)', 'url' => route('agent.scan.order-handover'), 'active' => false],
-    ];
+    // $navigation is now provided by AgentNavigationComposer
 @endphp
 
 @section('content')
@@ -63,6 +58,22 @@
                     <dt class="text-sm text-gray-600">Client</dt>
                     <dd class="text-sm font-medium text-gray-900">{{ $shipment->client->name }} (Group ID: {{ $shipment->client->group_id }})</dd>
                 </div>
+                @if($shipment->receivedByAgent)
+                <div>
+                    <dt class="text-sm text-gray-600">Received By Agent</dt>
+                    <dd class="text-sm font-semibold text-purple-600">{{ $shipment->receivedByAgent->name }}</dd>
+                </div>
+                @endif
+                @if($shipment->warehouse_name)
+                <div>
+                    <dt class="text-sm text-gray-600">Warehouse</dt>
+                    <dd class="text-sm">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                            {{ $shipment->warehouse_name }}
+                        </span>
+                    </dd>
+                </div>
+                @endif
             </dl>
         </div>
         
@@ -91,6 +102,73 @@
     <div class="mb-6">
         <h3 class="text-sm font-medium text-gray-500 mb-2">Description</h3>
         <p class="text-sm text-gray-700">{{ $shipment->description }}</p>
+    </div>
+    @endif
+    
+    <!-- Products Section -->
+    @if($shipment->products->count() > 0)
+    <div class="mb-6 border-t pt-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Products in this Shipment</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($shipment->products as $product)
+            <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 hover:border-purple-300">
+                <div class="flex items-start justify-between mb-3">
+                    <h4 class="text-base font-bold text-gray-900 flex-1">{{ $product->name }}</h4>
+                    <span class="ml-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
+                        {{ $product->quantity_available }}
+                    </span>
+                </div>
+                
+                @if($product->description)
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+                @endif
+                
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-purple-200">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Expected</p>
+                        <p class="text-lg font-bold text-gray-900">{{ $product->quantity_expected }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Available</p>
+                        <p class="text-lg font-bold text-purple-600">{{ $product->quantity_available }}</p>
+                    </div>
+                </div>
+                
+                @if($product->product_condition)
+                <div class="mt-3 pt-3 border-t border-purple-200">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Condition</p>
+                    <span class="px-2 py-1 rounded text-xs font-semibold uppercase
+                        @if($product->product_condition === 'excellent') bg-green-100 text-green-800
+                        @elseif($product->product_condition === 'good') bg-blue-100 text-blue-800
+                        @elseif($product->product_condition === 'fair') bg-yellow-100 text-yellow-800
+                        @elseif($product->product_condition === 'damaged') bg-red-100 text-red-800
+                        @endif">
+                        {{ $product->product_condition }}
+                    </span>
+                </div>
+                @endif
+                
+                @if($product->notes)
+                <div class="mt-3 pt-3 border-t border-purple-200">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Notes</p>
+                    <p class="text-xs text-gray-700">{{ $product->notes }}</p>
+                </div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+        
+        <!-- Products Summary -->
+        <div class="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div class="flex items-center justify-between text-sm">
+                <span class="font-semibold text-gray-700">Total Products:</span>
+                <span class="font-bold text-gray-900">{{ $shipment->products->count() }} items</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-2">
+                <span class="font-semibold text-gray-700">Combined Quantity:</span>
+                <span class="font-bold text-purple-600">{{ $shipment->products->sum('quantity_available') }} units</span>
+            </div>
+        </div>
     </div>
     @endif
     

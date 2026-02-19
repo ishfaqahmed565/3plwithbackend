@@ -7,13 +7,7 @@
     $title = 'Manage Clients';
     $userName = auth('admin')->user()->name;
     $logoutRoute = route('admin.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('admin.dashboard'), 'active' => false],
-        ['label' => 'Clients', 'url' => route('admin.clients.index'), 'active' => true],
-        ['label' => 'Agents', 'url' => route('admin.agents.index'), 'active' => false],
-        ['label' => 'Admins', 'url' => route('admin.admins.index'), 'active' => false],
-        ['label' => 'Settlements', 'url' => route('admin.settlements.index'), 'active' => false],
-    ];
+    // $navigation is now provided by AdminNavigationComposer
 @endphp
 
 @section('content')

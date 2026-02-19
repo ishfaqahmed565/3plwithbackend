@@ -35,6 +35,6 @@ class AuthController extends Controller
         Auth::guard('agent')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/agent/login');
+        return redirect('/');
     }
 }

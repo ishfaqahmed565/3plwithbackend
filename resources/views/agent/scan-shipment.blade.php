@@ -7,15 +7,12 @@
     $title = 'Agent Dashboard';
     $userName = auth('agent')->user()->name;
     $logoutRoute = route('agent.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('agent.dashboard'), 'active' => false],
-        ['label' => 'Scan-1 (Shipment)', 'url' => route('agent.scan.shipment'), 'active' => true],
-    ];
+    // $navigation is now provided by AgentNavigationComposer
 @endphp
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    @if(!isset($shipment))
+    @if(!isset($shipment) && !isset($trackingId))
     <!-- Lookup Form -->
     <div class="bg-white rounded-lg shadow p-8">
         <div class="text-center mb-8">
@@ -39,6 +36,60 @@
                 </div>
             </div>
         </form>
+    </div>
+    @elseif(isset($trackingId))
+    <!-- Not Found - Show Modal -->
+    <div class="bg-white rounded-lg shadow p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-purple-600 mb-2">Scan-1: Receive Shipment</h2>
+            <p class="text-gray-600">Enter tracking ID to lookup shipment</p>
+        </div>
+        
+        <form method="GET" action="{{ route('agent.scan.shipment') }}">
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tracking ID *</label>
+                    <input type="text" name="tracking_id" autofocus required
+                           placeholder="Enter tracking number..."
+                           value="{{ $trackingId }}"
+                           class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold">
+                        Lookup Shipment
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="notFoundModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                
+                <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Shipment Not Found</h3>
+                <p class="text-sm text-gray-600 text-center mb-6">
+                    There is no shipment with tracking ID <span class="font-mono font-semibold text-purple-600">{{ $trackingId }}</span> in the system. Would you like to create an unknown shipment?
+                </p>
+                
+                <div class="flex gap-3">
+                    <a href="{{ route('agent.scan.shipment') }}" 
+                       class="flex-1 text-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">
+                        No, Go Back
+                    </a>
+                    <a href="{{ route('agent.shipments.create-unknown', ['tracking_id' => $trackingId]) }}" 
+                       class="flex-1 text-center bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+                        Yes, Create
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
     @else
     <!-- Shipment Details & Verification Form -->
@@ -107,6 +158,34 @@
             </div>
         </div>
         @endif
+        
+        <!-- Products List -->
+        @if($shipment->products->count() > 0)
+        <div class="border-t pt-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Products in this Shipment</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($shipment->products as $product)
+                <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-5 shadow-sm">
+                    <div class="flex items-start justify-between mb-3">
+                        <h4 class="text-base font-bold text-gray-900 flex-1">{{ $product->name }}</h4>
+                        <span class="ml-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
+                            {{ $product->quantity_expected }}
+                        </span>
+                    </div>
+                    
+                    @if($product->description)
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+                    @endif
+                    
+                    <div class="pt-3 border-t border-purple-200">
+                        <p class="text-xs font-semibold text-purple-600 uppercase tracking-wide">Expected Quantity</p>
+                        <p class="text-2xl font-bold text-purple-600">{{ $product->quantity_expected }}</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
     
     <!-- Verification Form -->
@@ -118,66 +197,96 @@
             <input type="hidden" name="tracking_id" value="{{ $shipment->tracking_id }}">
             
             <div class="mb-6">
-                <label for="rack_location" class="block text-sm font-medium text-gray-700 mb-2">Assign Rack Location *</label>
-                <input type="text" name="rack_location" id="rack_location" required
+                <label for="rack_location" class="block text-sm font-medium text-gray-700 mb-2">Assign Rack Location (Optional)</label>
+                <input type="text" name="rack_location" id="rack_location"
                     value="{{ old('rack_location') }}"
-                    placeholder="Enter rack location code (e.g., A1-05)"
+                    placeholder="Enter rack location code (e.g., A1-05) or leave blank to assign later"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                 @error('rack_location')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                 @enderror
-                <p class="text-sm text-gray-500 mt-1">Enter the rack location code where this product will be stored</p>
+                <p class="text-sm text-gray-500 mt-1">You can assign the rack location now or later from the dashboard</p>
+            </div>
+            
+            <!-- Per-Product Verification -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Verify Each Product *</h3>
+                <div class="space-y-6">
+                    @foreach($shipment->products as $index => $product)
+                    <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-5">
+                        <input type="hidden" name="products[{{ $index }}][id]" value="{{ $product->id }}">
+                        
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-bold text-gray-900">{{ $product->name }}</h4>
+                                @if($product->description)
+                                <p class="text-sm text-gray-600 mt-1">{{ $product->description }}</p>
+                                @endif
+                            </div>
+                            <span class="ml-3 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
+                                Expected: {{ $product->quantity_expected }}
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Received Quantity *</label>
+                                <input type="number" name="products[{{ $index }}][quantity_received]" required min="1" max="{{ $product->quantity_expected }}"
+                                    value="{{ old('products.'.$index.'.quantity_received', $product->quantity_expected) }}"
+                                    class="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 font-semibold text-center">
+                                @error('products.'.$index.'.quantity_received')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Condition *</label>
+                                <select name="products[{{ $index }}][condition]" required
+                                    class="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Select</option>
+                                    <option value="excellent" {{ old('products.'.$index.'.condition') === 'excellent' ? 'selected' : '' }}>Excellent</option>
+                                    <option value="good" {{ old('products.'.$index.'.condition') === 'good' ? 'selected' : '' }}>Good</option>
+                                    <option value="fair" {{ old('products.'.$index.'.condition') === 'fair' ? 'selected' : '' }}>Fair</option>
+                                    <option value="damaged" {{ old('products.'.$index.'.condition') === 'damaged' ? 'selected' : '' }}>Damaged</option>
+                                </select>
+                                @error('products.'.$index.'.condition')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                <textarea name="products[{{ $index }}][notes]" rows="2" placeholder="Optional notes about this product..."
+                                    class="w-full px-4 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500">{{ old('products.'.$index.'.notes') }}</textarea>
+                                @error('products.'.$index.'.notes')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
             </div>
             
             <div class="mb-6">
-                <label for="received_quantity" class="block text-sm font-medium text-gray-700 mb-2">Verify Received Quantity *</label>
-                <input type="number" name="received_quantity" id="received_quantity" required min="1"
-                    value="{{ old('received_quantity', $shipment->quantity_total) }}"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                @error('received_quantity')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                <p class="text-sm text-gray-500 mt-1">Confirm the actual quantity received (Expected: {{ $shipment->quantity_total }})</p>
-            </div>
-            
-            <div class="mb-6">
-                <label for="product_condition" class="block text-sm font-medium text-gray-700 mb-2">Product Condition *</label>
-                <select name="product_condition" id="product_condition" required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    <option value="">Select condition</option>
-                    <option value="excellent" {{ old('product_condition') === 'excellent' ? 'selected' : '' }}>Excellent</option>
-                    <option value="good" {{ old('product_condition') === 'good' ? 'selected' : '' }}>Good</option>
-                    <option value="fair" {{ old('product_condition') === 'fair' ? 'selected' : '' }}>Fair</option>
-                    <option value="damaged" {{ old('product_condition') === 'damaged' ? 'selected' : '' }}>Damaged</option>
-                </select>
-                @error('product_condition')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            
-            <div class="mb-6">
-                <label for="scan1_notes" class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                <label for="scan1_notes" class="block text-sm font-medium text-gray-700 mb-2">General Shipment Notes</label>
                 <textarea name="scan1_notes" id="scan1_notes" rows="3"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="Any additional observations or notes...">{{ old('scan1_notes') }}</textarea>
+                    placeholder="Any general observations about the entire shipment...">{{ old('scan1_notes') }}</textarea>
                 @error('scan1_notes')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
             
-            <div class="mb-6">
-                <label for="scan1_files" class="block text-sm font-medium text-gray-700 mb-2">Proof Files *</label>
-                <input type="file" name="scan1_files[]" id="scan1_files" required multiple accept="image/*,application/pdf"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                @error('scan1_files')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                @error('scan1_files.*')
-                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                @enderror
-                <p class="text-sm text-gray-500 mt-1">Upload multiple images or PDFs as proof</p>
-                <div id="scan1-files-preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-            </div>
+            <x-file-upload-modal 
+                inputName="scan1_files"
+                inputId="scan1_files"
+                previewId="scan1-files-preview"
+                modalId="upload-modal-scan"
+                color="purple"
+                label="Proof Files"
+                :required="true"
+            />
 
             <div class="mb-6">
                 <div class="flex items-center justify-between mb-2">
@@ -208,57 +317,8 @@
 
 <script>
     (function () {
-        const scanInput = document.getElementById('scan1_files');
-        const preview = document.getElementById('scan1-files-preview');
         const addLineItemButton = document.getElementById('add-line-item');
         const lineItemsContainer = document.getElementById('line-items-container');
-
-        if (scanInput && preview) {
-            const renderPreview = (files) => {
-                preview.innerHTML = '';
-
-                files.forEach((file, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'border rounded-lg p-3 bg-gray-50 relative';
-
-                    const removeButton = document.createElement('button');
-                    removeButton.type = 'button';
-                    removeButton.className = 'absolute top-2 right-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded';
-                    removeButton.textContent = 'Remove';
-                    removeButton.addEventListener('click', () => {
-                        const dt = new DataTransfer();
-                        files.filter((_, i) => i !== index).forEach((f) => dt.items.add(f));
-                        scanInput.files = dt.files;
-                        renderPreview(Array.from(scanInput.files));
-                    });
-
-                    const title = document.createElement('p');
-                    title.className = 'text-sm font-medium text-gray-700 mb-2 break-all';
-                    title.textContent = file.name;
-
-                    if (file.type.startsWith('image/')) {
-                        const img = document.createElement('img');
-                        img.className = 'w-full h-40 object-cover rounded';
-                        img.src = URL.createObjectURL(file);
-                        img.onload = () => URL.revokeObjectURL(img.src);
-                        card.appendChild(img);
-                    } else {
-                        const pdfBadge = document.createElement('div');
-                        pdfBadge.className = 'flex items-center justify-center h-40 bg-white border border-dashed rounded text-sm text-gray-600';
-                        pdfBadge.textContent = 'PDF Document';
-                        card.appendChild(pdfBadge);
-                    }
-
-                    card.appendChild(title);
-                    card.appendChild(removeButton);
-                    preview.appendChild(card);
-                });
-            };
-
-            scanInput.addEventListener('change', () => {
-                renderPreview(Array.from(scanInput.files));
-            });
-        }
 
         const addLineItemRow = (value = '') => {
             if (!lineItemsContainer) {

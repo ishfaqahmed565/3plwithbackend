@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test Agent',
             'email' => 'agent@3pl.com',
             'password' => Hash::make('password'),
+            'warehouse' => 1,
         ]);
 
         $this->command->info('✅ Test users created:');

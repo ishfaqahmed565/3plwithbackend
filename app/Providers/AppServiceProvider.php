@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\View\Composers\AdminNavigationComposer;
+use App\View\Composers\AgentNavigationComposer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register view composers for navigation
+        View::composer('admin.*', AdminNavigationComposer::class);
+        View::composer('agent.*', AgentNavigationComposer::class);
     }
 }

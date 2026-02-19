@@ -7,13 +7,7 @@
     $title = 'Manage Agents';
     $userName = auth('admin')->user()->name;
     $logoutRoute = route('admin.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('admin.dashboard'), 'active' => false],
-        ['label' => 'Clients', 'url' => route('admin.clients.index'), 'active' => false],
-        ['label' => 'Agents', 'url' => route('admin.agents.index'), 'active' => true],
-        ['label' => 'Admins', 'url' => route('admin.admins.index'), 'active' => false],
-        ['label' => 'Settlements', 'url' => route('admin.settlements.index'), 'active' => false],
-    ];
+    // $navigation is now provided by AdminNavigationComposer
 @endphp
 
 @section('content')
@@ -32,6 +26,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warehouse</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                 </tr>
             </thead>
@@ -41,11 +36,16 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $agent->id }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $agent->name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $agent->email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                            {{ $agent->warehouse_name }}
+                        </span>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $agent->created_at->format('M d, Y') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                         No agents found. <a href="{{ route('admin.agents.create') }}" class="text-blue-600 hover:text-blue-800">Create one now</a>
                     </td>
                 </tr>

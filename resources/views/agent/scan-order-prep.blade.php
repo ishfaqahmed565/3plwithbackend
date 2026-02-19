@@ -7,12 +7,7 @@
     $title = 'Agent Dashboard';
     $userName = auth('agent')->user()->name;
     $logoutRoute = route('agent.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('agent.dashboard'), 'active' => false],
-        ['label' => 'Scan-1 (Shipment)', 'url' => route('agent.scan.shipment'), 'active' => false],
-        ['label' => 'Scan-2 (Prep)', 'url' => route('agent.scan.order-prep'), 'active' => true],
-        ['label' => 'Scan-3 (Handover)', 'url' => route('agent.scan.order-handover'), 'active' => false],
-    ];
+    // $navigation is now provided by AgentNavigationComposer
 @endphp
 
 @section('content')

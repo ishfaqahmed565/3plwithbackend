@@ -7,13 +7,7 @@
     $title = 'Create New Agent';
     $userName = auth('admin')->user()->name;
     $logoutRoute = route('admin.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('admin.dashboard'), 'active' => false],
-        ['label' => 'Clients', 'url' => route('admin.clients.index'), 'active' => false],
-        ['label' => 'Agents', 'url' => route('admin.agents.index'), 'active' => true],
-        ['label' => 'Admins', 'url' => route('admin.admins.index'), 'active' => false],
-        ['label' => 'Settlements', 'url' => route('admin.settlements.index'), 'active' => false],
-    ];
+    // $navigation is now provided by AdminNavigationComposer
 @endphp
 
 @section('content')
@@ -38,6 +32,20 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value="{{ old('email') }}">
                 @error('email')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            
+            <div class="mb-4">
+                <label for="warehouse" class="block text-sm font-medium text-gray-700 mb-2">Warehouse *</label>
+                <select name="warehouse" id="warehouse" required 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select Warehouse</option>
+                    <option value="1" {{ old('warehouse') == 1 ? 'selected' : '' }}>New York</option>
+                    <option value="2" {{ old('warehouse') == 2 ? 'selected' : '' }}>Long Island</option>
+                    <option value="3" {{ old('warehouse') == 3 ? 'selected' : '' }}>California</option>
+                </select>
+                @error('warehouse')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>

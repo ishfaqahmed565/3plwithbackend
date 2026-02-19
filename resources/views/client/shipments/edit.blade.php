@@ -25,10 +25,69 @@
         @method('PUT')
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
-                <input type="text" name="product_name" value="{{ old('product_name', $shipment->product_name) }}" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            <div class="md:col-span-2">
+                <label class="block text-lg font-semibold text-gray-800 mb-4">Products *</label>
+                <div id="products-list" class="space-y-4">
+                    @php $oldProducts = old('products', []); @endphp
+                    @if(!empty($oldProducts))
+                        @foreach($oldProducts as $i => $p)
+                            <div class="product-row bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <div class="grid grid-cols-12 gap-4">
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
+                                        <input type="text" name="products[{{ $i }}][name]" value="{{ $p['name'] ?? '' }}" placeholder="Enter product name" required
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
+                                        <input type="text" name="products[{{ $i }}][description]" value="{{ $p['description'] ?? '' }}" placeholder="Product description (optional)"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-2">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
+                                        <input type="number" name="products[{{ $i }}][quantity]" min="1" required value="{{ $p['quantity'] ?? 1 }}"
+                                               oninvalid="this.setCustomValidity('Please enter a quantity of at least 1')"
+                                               oninput="this.setCustomValidity('')"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        @foreach($shipment->products as $i => $prod)
+                            <div class="product-row bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <div class="grid grid-cols-12 gap-4">
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
+                                        <input type="text" name="products[{{ $i }}][name]" value="{{ $prod->name }}" placeholder="Enter product name" required
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
+                                        <input type="text" name="products[{{ $i }}][description]" value="{{ $prod->description }}" placeholder="Product description (optional)"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-2">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
+                                        <input type="number" name="products[{{ $i }}][quantity]" min="1" required value="{{ $prod->quantity_expected }}"
+                                               oninvalid="this.setCustomValidity('Please enter a quantity of at least 1')"
+                                               oninput="this.setCustomValidity('')"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+                <div class="mt-4">
+                    <button type="button" id="add-product" 
+                            class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Add Another Product
+                    </button>
+                </div>
             </div>
 
             <div>
@@ -49,15 +108,12 @@
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
-                <input type="number" name="quantity_total" value="{{ old('quantity_total', $shipment->quantity_total) }}" required min="1"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-            </div>
+            
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tracking ID *</label>
-                <input type="text" name="tracking_id" value="{{ old('tracking_id', $shipment->tracking_id) }}" required
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tracking ID (Optional)</label>
+                <input type="text" name="tracking_id" value="{{ old('tracking_id', $shipment->tracking_id) }}"
+                       placeholder="e.g., 1Z999AA10123456784"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
                 @error('tracking_id')
                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -81,14 +137,15 @@
                 @enderror
             </div>
 
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Add Images / PDF Documents</label>
-                <input type="file" name="attachments[]" id="client-attachments" multiple accept="image/*,application/pdf"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <p class="text-sm text-gray-500 mt-1">Upload multiple images or PDFs (Max: 5MB each)</p>
-
-                <div id="client-attachments-preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            </div>
+<x-file-upload-modal 
+                inputName="attachments"
+                inputId="client-attachments-edit"
+                previewId="client-attachments-preview-edit"
+                modalId="upload-modal-edit"
+                color="green"
+                label="Add Images / PDF Documents"
+                :required="false"
+            />
         </div>
 
         @if($shipment->attachments->where('context', 'client_upload')->count())
@@ -193,4 +250,77 @@
         });
     })();
 </script>
+    <script>
+        (function () {
+            const list = document.getElementById('products-list');
+            const addBtn = document.getElementById('add-product');
+
+            if (!list || !addBtn) return;
+
+            function reindex() {
+                const rows = Array.from(list.querySelectorAll('.product-row'));
+                rows.forEach((row, idx) => {
+                    const name = row.querySelector('input[name$="[name]"]');
+                    const desc = row.querySelector('input[name$="[description]"]');
+                    const qty = row.querySelector('input[name$="[quantity]"]');
+
+                    if (name) name.name = `products[${idx}][name]`;
+                    if (desc) desc.name = `products[${idx}][description]`;
+                    if (qty) qty.name = `products[${idx}][quantity]`;
+
+                    // ensure remove button
+                    let remove = row.querySelector('.remove-product');
+                    if (!remove && rows.length > 1) {
+                        remove = document.createElement('button');
+                        remove.type = 'button';
+                        remove.className = 'remove-product mt-3 inline-flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 border-2 border-red-200 hover:border-red-300';
+                        remove.innerHTML = `
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Remove Product
+                        `;
+                        remove.addEventListener('click', () => {
+                            row.remove();
+                            reindex();
+                        });
+                        row.appendChild(remove);
+                    } else if (remove && rows.length === 1) {
+                        remove.remove();
+                    }
+                });
+            }
+
+            addBtn.addEventListener('click', () => {
+                const idx = list.querySelectorAll('.product-row').length;
+                const div = document.createElement('div');
+                div.className = 'product-row bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200';
+                div.innerHTML = `
+                    <div class="grid grid-cols-12 gap-4">
+                        <div class="col-span-12 sm:col-span-5">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
+                            <input type="text" name="products[${idx}][name]" placeholder="Enter product name" required
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                        </div>
+                        <div class="col-span-12 sm:col-span-5">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
+                            <input type="text" name="products[${idx}][description]" placeholder="Product description (optional)"
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                        </div>
+                        <div class="col-span-12 sm:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
+                            <input type="number" name="products[${idx}][quantity]" min="1" required value="1"
+                                   oninvalid="this.setCustomValidity('Please enter a quantity of at least 1')"
+                                   oninput="this.setCustomValidity('')"
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+                reindex();
+            });
+
+            reindex();
+        })();
+    </script>
 @endsection

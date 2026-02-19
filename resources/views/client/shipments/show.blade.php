@@ -64,6 +64,22 @@
                     </dd>
                 </div>
                 @endif
+                @if($shipment->receivedByAgent)
+                <div>
+                    <dt class="text-sm text-gray-600">Received By Agent</dt>
+                    <dd class="text-sm font-semibold text-green-600">{{ $shipment->receivedByAgent->name }}</dd>
+                </div>
+                @endif
+                @if($shipment->warehouse_name)
+                <div>
+                    <dt class="text-sm text-gray-600">Warehouse Location</dt>
+                    <dd class="text-sm">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                            {{ $shipment->warehouse_name }}
+                        </span>
+                    </dd>
+                </div>
+                @endif
             </dl>
         </div>
         
@@ -92,6 +108,70 @@
     <div class="mb-6">
         <h3 class="text-sm font-medium text-gray-500 mb-2">Description</h3>
         <p class="text-sm text-gray-700">{{ $shipment->description }}</p>
+    </div>
+    @endif
+    
+    <!-- Products Section -->
+    @if($shipment->products->count() > 0)
+    <div class="mb-6 border-t pt-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Products in this Shipment</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($shipment->products as $product)
+            <div class="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 hover:border-green-300">
+                <div class="flex items-start justify-between mb-3">
+                    <h4 class="text-base font-bold text-gray-900 flex-1">{{ $product->name }}</h4>
+                    <span class="ml-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold">
+                        {{ $product->quantity_available }}
+                    </span>
+                </div>
+                
+                @if($product->description)
+                <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+                @endif
+                
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Expected</p>
+                        <p class="text-lg font-bold text-gray-900">{{ $product->quantity_expected }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Available</p>
+                        <p class="text-lg font-bold text-green-600">{{ $product->quantity_available }}</p>
+                    </div>
+                </div>
+                
+                @if($product->quantity_available != $product->quantity_expected)
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <div class="flex items-center gap-2">
+                        @if($product->quantity_available < $product->quantity_expected)
+                        <svg class="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-xs text-orange-600 font-semibold">Partial quantity</span>
+                        @else
+                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-xs text-blue-600 font-semibold">Adjusted quantity</span>
+                        @endif
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+        
+        <!-- Products Summary -->
+        <div class="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between text-sm">
+                <span class="font-semibold text-gray-700">Total Products:</span>
+                <span class="font-bold text-gray-900">{{ $shipment->products->count() }} items</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-2">
+                <span class="font-semibold text-gray-700">Combined Quantity:</span>
+                <span class="font-bold text-green-600">{{ $shipment->products->sum('quantity_available') }} units</span>
+            </div>
+        </div>
     </div>
     @endif
     

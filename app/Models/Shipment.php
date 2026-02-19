@@ -13,6 +13,8 @@ class Shipment extends Model
     protected $fillable = [
         'shipment_code',
         'client_id',
+        'created_by_agent_id',
+        'created_by_admin_id',
         'tracking_id',
         'source',
         'delivery_partner',
@@ -25,10 +27,13 @@ class Shipment extends Model
         'status',
         'scan1_at',
         'rack_location_id',
+        'rack_location',
         'received_quantity',
         'product_condition',
         'scan1_notes',
         'scan1_image_path',
+        'received_by_agent_id',
+        'received_in_warehouse',
     ];
 
     protected $casts = [
@@ -59,6 +64,39 @@ class Shipment extends Model
     public function lineItems(): HasMany
     {
         return $this->hasMany(ShipmentLineItem::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(ShipmentProduct::class);
+    }
+
+    public function receivedByAgent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class, 'received_by_agent_id');
+    }
+
+    public function createdByAgent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class, 'created_by_agent_id');
+    }
+
+    public function createdByAdmin(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'created_by_admin_id');
+    }
+
+    public function getWarehouseNameAttribute(): ?string
+    {
+        if (!$this->received_in_warehouse) {
+            return null;
+        }
+        return match($this->received_in_warehouse) {
+            1 => 'New York',
+            2 => 'Long Island',
+            3 => 'California',
+            default => 'Unknown',
+        };
     }
 
     // Business Logic

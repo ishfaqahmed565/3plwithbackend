@@ -25,6 +25,7 @@ class AgentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:agents,email',
+            'warehouse' => 'required|integer|in:1,2,3',
             'password' => 'required|string|min:8|confirmed',
         ]);
 

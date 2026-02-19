@@ -32,16 +32,16 @@
 </div>
 
 <div class="bg-white rounded-lg shadow p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+  Quick Actions
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <a href="{{ route('client.shipments.create') }}" class="block p-4 border-2 border-green-200 rounded-lg hover:border-green-400 transition">
             <h3 class="font-semibold text-green-600">Create Shipment</h3>
             <p class="text-sm text-gray-600 mt-1">Add new inventory to warehouse</p>
         </a>
-        <a href="{{ route('client.orders.create') }}" class="block p-4 border-2 border-green-200 rounded-lg hover:border-green-400 transition">
+        <!-- <a href="{{ route('client.orders.create') }}" class="block p-4 border-2 border-green-200 rounded-lg hover:border-green-400 transition">
             <h3 class="font-semibold text-green-600">Create Order</h3>
             <p class="text-sm text-gray-600 mt-1">Create customer delivery order</p>
-        </a>
+        </a> -->
     </div>
 </div>
 @endsection

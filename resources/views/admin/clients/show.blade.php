@@ -7,13 +7,7 @@
     $title = 'Client Details';
     $userName = auth('admin')->user()->name;
     $logoutRoute = route('admin.logout');
-    $navigation = [
-        ['label' => 'Dashboard', 'url' => route('admin.dashboard'), 'active' => false],
-        ['label' => 'Clients', 'url' => route('admin.clients.index'), 'active' => true],
-        ['label' => 'Agents', 'url' => route('admin.agents.index'), 'active' => false],
-        ['label' => 'Admins', 'url' => route('admin.admins.index'), 'active' => false],
-        ['label' => 'Settlements', 'url' => route('admin.settlements.index'), 'active' => false],
-    ];
+    // $navigation is now provided by AdminNavigationComposer
 @endphp
 
 @section('content')
@@ -76,7 +70,7 @@
                 <tr>
                     <td class="px-6 py-4 text-sm font-mono">{{ $shipment->shipment_code }}</td>
                     <td class="px-6 py-4 text-sm">{{ $shipment->product_name }}</td>
-                    <td class="px-6 py-4 text-sm">{{ $shipment->total_quantity }}</td>
+                    <td class="px-6 py-4 text-sm">{{ $shipment->quantity_total }}</td>
                     <td class="px-6 py-4 text-sm">{{ $shipment->quantity_available }}</td>
                     <td class="px-6 py-4 text-sm">
                         <span class="px-2 py-1 rounded text-xs font-semibold

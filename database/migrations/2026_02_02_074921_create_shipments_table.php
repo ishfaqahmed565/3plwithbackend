@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
             $table->string('shipment_code')->unique();
-            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->foreignId('client_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('tracking_id')->nullable();
             $table->string('source');
-            $table->string('product_name');
+            $table->string('product_name')->nullable();
             $table->text('product_description')->nullable();
             $table->string('category')->nullable();
             $table->string('product_image_path')->nullable();
