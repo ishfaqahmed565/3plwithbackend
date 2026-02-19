@@ -21,7 +21,7 @@ class AdminNavigationComposer
             ['label' => 'Clients', 'url' => route('admin.clients.index'), 'route' => 'admin.clients.*'],
             ['label' => 'Agents', 'url' => route('admin.agents.index'), 'route' => 'admin.agents.*'],
             ['label' => 'Admins', 'url' => route('admin.admins.index'), 'route' => 'admin.admins.*'],
-            ['label' => 'Settlements', 'url' => route('admin.settlements.index'), 'route' => 'admin.settlements.*'],
+    
         ];
         
         // Set active state based on current route

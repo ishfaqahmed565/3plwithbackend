@@ -49,8 +49,10 @@ class ShipmentController extends Controller
         // Check if tracking ID exists and was created by agent/admin
         if (!empty($validated['tracking_id'])) {
             $existingShipment = Shipment::where('tracking_id', $validated['tracking_id'])
-                ->whereNotNull('created_by_agent_id')
-                ->orWhereNotNull('created_by_admin_id')
+                ->where(function ($query) {
+                    $query->whereNotNull('created_by_agent_id')
+                          ->orWhereNotNull('created_by_admin_id');
+                })
                 ->first();
             
             if ($existingShipment) {
