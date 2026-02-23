@@ -28,7 +28,13 @@ class ShipmentReceivedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        // Only send mail if mail is properly configured
+        if (config('mail.mailers.smtp.host')) {
+            return ['mail'];
+        }
+        
+        // If mail is not configured, don't send anything (graceful degradation)
+        return [];
     }
 
     /**
