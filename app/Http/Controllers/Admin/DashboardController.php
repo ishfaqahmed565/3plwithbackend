@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Client;
 use App\Models\Shipment;
 use App\Models\Order;
 use App\Models\Settlement;
+use App\Notifications\UnknownShipmentCreatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class DashboardController extends Controller
 {
@@ -75,6 +78,7 @@ class DashboardController extends Controller
             'category' => 'nullable|string|max:255',
             'tracking_id' => 'required|string|max:255|unique:shipments,tracking_id',
             'delivery_partner' => 'required|in:FEDEX,UPS,AMAZON,USPS,DHL,Other',
+            'type_of_sale' => 'nullable|in:FDA,FDM,WFS',
             'rack_location' => 'nullable|string|max:255',
             'scan1_notes' => 'nullable|string',
             'scan1_files' => 'required|array|min:1',
@@ -119,8 +123,8 @@ class DashboardController extends Controller
             foreach ($validated['line_items'] as $lineItem) {
                 if (!empty($lineItem)) {
                     $shipment->lineItems()->create([
-                        'barcode_value' => $lineItem,
-                        'scanned_at' => now(),
+                        'barcode' => $lineItem,
+                        'lookup_url' => '',
                     ]);
                 }
             }
@@ -136,6 +140,34 @@ class DashboardController extends Controller
                     'quantity_available' => $product['quantity'],
                 ]);
             }
+        }
+
+        // Send notification to admins (database) and email to warehouse
+        try {
+            $creatorName = Auth::guard('admin')->user()->name;
+            
+            // Store notification in database for all admins
+            foreach (Admin::all() as $admin) {
+                $admin->notify(new UnknownShipmentCreatedNotification(
+                    $shipment->fresh('products'),
+                    'admin',
+                    $creatorName
+                ));
+            }
+
+            // Send email to warehouse notification address
+            if (env('WAREHOUSE_NOTIFICATION_EMAIL')) {
+                Mail::send('mail.notifications.unknown-shipment-created', [
+                    'shipment' => $shipment->fresh('products'),
+                    'creatorType' => 'admin',
+                    'creatorName' => $creatorName
+                ], function ($message) {
+                    $tos = explode(',', env('WAREHOUSE_NOTIFICATION_EMAIL'));
+                    $message->to($tos)->subject('Unknown Shipment Created by Admin');
+                });
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send unknown shipment created notification: ' . $e->getMessage());
         }
         
         return redirect()->route('admin.dashboard')
@@ -201,8 +233,8 @@ class DashboardController extends Controller
                 foreach ($validated['line_items'] as $lineItem) {
                     if (!empty($lineItem)) {
                         $shipment->lineItems()->create([
-                            'barcode_value' => $lineItem,
-                            'scanned_at' => now(),
+                            'barcode' => $lineItem,
+                            'lookup_url' => '',
                         ]);
                     }
                 }

@@ -46,6 +46,7 @@
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tracking ID</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Available</th>
@@ -63,6 +64,13 @@
                         <a href="{{ route('client.shipments.show', $shipment) }}" class="text-green-600 hover:text-green-800 hover:underline font-mono">
                             {{ $shipment->shipment_code }}
                         </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        @if($shipment->tracking_id)
+                            <span class="font-mono text-gray-900">{{ $shipment->tracking_id }}</span>
+                        @else
+                            <span class="text-gray-400">No Tracking</span>
+                        @endif
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">{{ $shipment->product_name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $shipment->quantity_total }}</td>
@@ -91,7 +99,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                         No shipments found. <a href="{{ route('client.shipments.create') }}" class="text-green-600 hover:underline">Create your first shipment</a>
                     </td>
                 </tr>

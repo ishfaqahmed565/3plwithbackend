@@ -59,6 +59,9 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">
                         {{ $shipment->client?->name ?? 'Unassigned' }}
+                        @if($shipment->client?->group_id)
+                        <div class="text-xs text-gray-500">Group ID: {{ $shipment->client->group_id }}</div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 text-sm">
                         {{$shipment->rack_location}}

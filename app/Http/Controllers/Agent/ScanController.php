@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Shipment;
 use App\Models\Order;
 use App\Models\RackLocation;
+use App\Notifications\ShipmentReceivedNotification;
 use App\Services\ShipmentService;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -117,6 +118,16 @@ class ScanController extends Controller
             auth('agent')->id(),
             auth('agent')->user()->warehouse
         );
+
+        // Send email notification to client
+        if ($shipment->client) {
+            try {
+                $shipment->client->notify(new ShipmentReceivedNotification($shipment->fresh(['products', 'attachments'])));
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                \Log::error('Failed to send shipment received notification: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('agent.dashboard')->with('success', 'Scan-1 Complete: Shipment ' . $shipment->shipment_code . ' received and verified!');
     }

@@ -19,7 +19,7 @@ use App\Http\Controllers\Agent\ScanController as AgentScanController;
 Route::get('/', function () {
     return view('welcome-backup');
 });
-Route::post('/login', [UnifiedLoginController::class, 'login'])->name('login');
+Route::post('/', [UnifiedLoginController::class, 'login'])->name('login');
 
 // Admin Routes
 Route::prefix('admin')->group(function () {

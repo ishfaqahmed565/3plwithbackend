@@ -50,6 +50,26 @@
                                                oninput="this.setCustomValidity('')"
                                                class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                     </div>
+                                    <div class="col-span-12 sm:col-span-2">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
+                                        <select name="products[{{ $i }}][type_of_sale]"
+                                                class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                            <option value="">Select</option>
+                                            <option value="FDA" {{ ($p['type_of_sale'] ?? '') === 'FDA' ? 'selected' : '' }}>FDA</option>
+                                            <option value="FDM" {{ ($p['type_of_sale'] ?? '') === 'FDM' ? 'selected' : '' }}>FDM</option>
+                                            <option value="WFS" {{ ($p['type_of_sale'] ?? '') === 'WFS' ? 'selected' : '' }}>WFS</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Image</label>
+                                        <input type="file" name="products[{{ $i }}][image]" accept="image/*"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL</label>
+                                        <input type="url" name="products[{{ $i }}][link_url]" placeholder="https://..." value="{{ $p['link_url'] ?? '' }}"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -72,6 +92,29 @@
                                         <input type="number" name="products[{{ $i }}][quantity]" min="1" required value="{{ $prod->quantity_expected }}"
                                                oninvalid="this.setCustomValidity('Please enter a quantity of at least 1')"
                                                oninput="this.setCustomValidity('')"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-2">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
+                                        <select name="products[{{ $i }}][type_of_sale]"
+                                                class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                            <option value="">Select</option>
+                                            <option value="FDA" {{ $prod->type_of_sale === 'FDA' ? 'selected' : '' }}>FDA</option>
+                                            <option value="FDM" {{ $prod->type_of_sale === 'FDM' ? 'selected' : '' }}>FDM</option>
+                                            <option value="WFS" {{ $prod->type_of_sale === 'WFS' ? 'selected' : '' }}>WFS</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Image</label>
+                                        <input type="file" name="products[{{ $i }}][image]" accept="image/*"
+                                               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                                        @if($prod->image_path)
+                                            <p class="text-xs text-gray-500 mt-1">Current: <a href="{{ Storage::url($prod->image_path) }}" target="_blank" class="text-green-600 hover:underline">View Image</a></p>
+                                        @endif
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-5">
+                                        <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL</label>
+                                        <input type="url" name="products[{{ $i }}][link_url]" placeholder="https://..." value="{{ $prod->link_url }}"
                                                class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                     </div>
                                 </div>
@@ -263,10 +306,16 @@
                     const name = row.querySelector('input[name$="[name]"]');
                     const desc = row.querySelector('input[name$="[description]"]');
                     const qty = row.querySelector('input[name$="[quantity]"]');
+                    const typeOfSale = row.querySelector('select[name$="[type_of_sale]"]');
+                    const image = row.querySelector('input[name$="[image]"]');
+                    const linkUrl = row.querySelector('input[name$="[link_url]"]');
 
                     if (name) name.name = `products[${idx}][name]`;
                     if (desc) desc.name = `products[${idx}][description]`;
                     if (qty) qty.name = `products[${idx}][quantity]`;
+                    if (typeOfSale) typeOfSale.name = `products[${idx}][type_of_sale]`;
+                    if (image) image.name = `products[${idx}][image]`;
+                    if (linkUrl) linkUrl.name = `products[${idx}][link_url]`;
 
                     // ensure remove button
                     let remove = row.querySelector('.remove-product');
@@ -312,6 +361,26 @@
                             <input type="number" name="products[${idx}][quantity]" min="1" required value="1"
                                    oninvalid="this.setCustomValidity('Please enter a quantity of at least 1')"
                                    oninput="this.setCustomValidity('')"
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                        </div>
+                        <div class="col-span-12 sm:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
+                            <select name="products[${idx}][type_of_sale]"
+                                    class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                <option value="">Select</option>
+                                <option value="FDA">FDA</option>
+                                <option value="FDM">FDM</option>
+                                <option value="WFS">WFS</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-5">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Image</label>
+                            <input type="file" name="products[${idx}][image]" accept="image/*"
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                        </div>
+                        <div class="col-span-12 sm:col-span-5">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL</label>
+                            <input type="url" name="products[${idx}][link_url]" placeholder="https://..."
                                    class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                         </div>
                     </div>

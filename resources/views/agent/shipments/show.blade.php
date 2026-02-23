@@ -46,6 +46,16 @@
                         </span>
                     </dd>
                 </div>
+                @if($shipment->type_of_sale)
+                <div>
+                    <dt class="text-sm text-gray-600">Type of Sale</dt>
+                    <dd class="text-sm">
+                        <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                            {{ $shipment->type_of_sale }}
+                        </span>
+                    </dd>
+                </div>
+                @endif
                 <div>
                     <dt class="text-sm text-gray-600">Source</dt>
                     <dd class="text-sm font-medium text-gray-900">{{ $shipment->source }}</dd>
@@ -112,6 +122,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($shipment->products as $product)
             <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 hover:border-purple-300">
+                @if($product->image_path)
+                <div class="mb-3">
+                    <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="w-full h-32 object-cover rounded-lg border-2 border-purple-300">
+                </div>
+                @endif
+                
                 <div class="flex items-start justify-between mb-3">
                     <h4 class="text-base font-bold text-gray-900 flex-1">{{ $product->name }}</h4>
                     <span class="ml-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
@@ -119,8 +135,24 @@
                     </span>
                 </div>
                 
+                @if($product->type_of_sale)
+                <div class="mb-2">
+                    <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                        {{ $product->type_of_sale }}
+                    </span>
+                </div>
+                @endif
+                
                 @if($product->description)
                 <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+                @endif
+                
+                @if($product->link_url)
+                <div class="mb-3">
+                    <a href="{{ $product->link_url }}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 underline break-all">
+                        {{ $product->link_url }}
+                    </a>
+                </div>
                 @endif
                 
                 <div class="grid grid-cols-2 gap-3 pt-3 border-t border-purple-200">

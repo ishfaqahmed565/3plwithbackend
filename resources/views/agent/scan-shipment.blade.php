@@ -131,6 +131,12 @@
                 <p class="text-sm text-gray-600">Delivery Partner</p>
                 <p class="text-lg font-semibold text-gray-900">{{ $shipment->delivery_partner }}</p>
             </div>
+            @if($shipment->type_of_sale)
+            <div>
+                <p class="text-sm text-gray-600">Type of Sale</p>
+                <p class="text-lg"><span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-800">{{ $shipment->type_of_sale }}</span></p>
+            </div>
+            @endif
             <div>
                 <p class="text-sm text-gray-600">Client</p>
                 <p class="text-lg text-gray-900">{{ $shipment->client->name }} (Group ID: {{ $shipment->client->group_id }})</p>
@@ -159,6 +165,24 @@
         </div>
         @endif
         
+        @if($shipment->attachments->where('context', 'client_upload')->count())
+        <div class="mb-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Client Attachments</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($shipment->attachments->where('context', 'client_upload') as $attachment)
+                    <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="border rounded-lg p-3 bg-gray-50 hover:border-purple-400 transition">
+                        <p class="text-sm font-medium text-gray-700 mb-2 break-all">{{ $attachment->original_name }}</p>
+                        @if(str_starts_with($attachment->mime_type, 'image/'))
+                            <img src="{{ Storage::url($attachment->file_path) }}" alt="Attachment" class="w-full h-40 object-cover rounded">
+                        @else
+                            <div class="flex items-center justify-center h-40 bg-white border border-dashed rounded text-sm text-gray-600">PDF Document</div>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+        
         <!-- Products List -->
         @if($shipment->products->count() > 0)
         <div class="border-t pt-6">
@@ -166,6 +190,12 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach($shipment->products as $product)
                 <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-5 shadow-sm">
+                    @if($product->image_path)
+                    <div class="mb-3">
+                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="w-full h-32 object-cover rounded-lg border-2 border-purple-300">
+                    </div>
+                    @endif
+                    
                     <div class="flex items-start justify-between mb-3">
                         <h4 class="text-base font-bold text-gray-900 flex-1">{{ $product->name }}</h4>
                         <span class="ml-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
@@ -173,8 +203,24 @@
                         </span>
                     </div>
                     
+                    @if($product->type_of_sale)
+                    <div class="mb-2">
+                        <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                            {{ $product->type_of_sale }}
+                        </span>
+                    </div>
+                    @endif
+                    
                     @if($product->description)
                     <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+                    @endif
+                    
+                    @if($product->link_url)
+                    <div class="mb-3">
+                        <a href="{{ $product->link_url }}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 underline break-all">
+                            {{ $product->link_url }}
+                        </a>
+                    </div>
                     @endif
                     
                     <div class="pt-3 border-t border-purple-200">
@@ -217,11 +263,19 @@
                         <input type="hidden" name="products[{{ $index }}][id]" value="{{ $product->id }}">
                         
                         <div class="flex items-start justify-between mb-4">
+                             <div class="flex flex-col items-center">
+                                 @if($product->image_path)
+                    <div class="mb-3">
+                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="w-full h-32 object-cover rounded-lg border-2 border-purple-300">
+                    </div>
+                    @endif
                             <div class="flex-1">
+                                
                                 <h4 class="text-lg font-bold text-gray-900">{{ $product->name }}</h4>
                                 @if($product->description)
                                 <p class="text-sm text-gray-600 mt-1">{{ $product->description }}</p>
                                 @endif
+                             </div>
                             </div>
                             <span class="ml-3 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
                                 Expected: {{ $product->quantity_expected }}

@@ -40,7 +40,12 @@
                         {{ $shipment->product_description }}
                         <div class="text-xs text-gray-500">{{ $shipment->category }}</div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ $shipment->client?->name ?? 'Unassigned' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        {{ $shipment->client?->name ?? 'Unassigned' }}
+                        @if($shipment->client?->group_id)
+                        <div class="text-xs text-gray-500">Group ID: {{ $shipment->client->group_id }}</div>
+                        @endif
+                    </td>
                     <td class="px-6 py-4 text-sm text-gray-600">{{ $shipment->receivedByAgent?->name ?? 'N/A' }}</td>
                     <td class="px-6 py-4 text-sm text-gray-600">{{ $shipment->received_in_warehouse ?? 'N/A' }}</td>
                     <td class="px-6 py-4 text-sm text-gray-600">{{ $shipment->scan1_completed_at ? $shipment->scan1_completed_at->format('M d, Y g:i A') : 'N/A' }}</td>

@@ -52,12 +52,21 @@ class ShipmentService
 
         if (!empty($products)) {
             foreach ($products as $p) {
+                // Handle product image
+                $productImagePath = null;
+                if (isset($p['image']) && $p['image'] instanceof UploadedFile) {
+                    $productImagePath = $p['image']->store('shipments/products', 'public');
+                }
+
                 ShipmentProduct::create([
                     'shipment_id' => $shipment->id,
                     'name' => $p['name'] ?? 'Unnamed',
                     'description' => $p['description'] ?? null,
                     'quantity_expected' => (int)($p['quantity'] ?? 0),
                     'quantity_available' => (int)($p['quantity'] ?? 0),
+                    'image_path' => $productImagePath,
+                    'link_url' => $p['link_url'] ?? null,
+                    'type_of_sale' => $p['type_of_sale'] ?? null,
                 ]);
             }
         }

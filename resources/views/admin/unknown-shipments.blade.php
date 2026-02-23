@@ -65,6 +65,7 @@
                     <td class="px-6 py-4 text-sm">
                         @if($shipment->client_id)
                         <span class="text-gray-900">{{ $shipment->client->name }}</span>
+                        <div class="text-xs text-gray-500">Group ID: {{ $shipment->client->group_id }}</div>
                         @else
                         <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded">Unassigned</span>
                         @endif

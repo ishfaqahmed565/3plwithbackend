@@ -26,12 +26,12 @@
                 <div id="products-list" class="space-y-4">
                     <div class="product-row bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <div class="grid grid-cols-12 gap-4">
-                            <div class="col-span-12 sm:col-span-5">
+                            <div class="col-span-12 sm:col-span-4">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
                                 <input type="text" name="products[0][name]" placeholder="Enter product name" required value="{{ old('products.0.name') }}"
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                             </div>
-                            <div class="col-span-12 sm:col-span-5">
+                            <div class="col-span-12 sm:col-span-4">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
                                 <input type="text" name="products[0][description]" placeholder="Product description (optional)" value="{{ old('products.0.description') }}"
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
@@ -42,6 +42,26 @@
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-semibold text-center"
                                        oninvalid="this.setCustomValidity('Quantity is required and must be at least 1')"
                                        oninput="this.setCustomValidity('')">
+                            </div>
+                            <div class="col-span-12 sm:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
+                                <select name="products[0][type_of_sale]"
+                                       class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                    <option value="">Select</option>
+                                    <option value="FDA" {{ old('products.0.type_of_sale') === 'FDA' ? 'selected' : '' }}>FDA</option>
+                                    <option value="FDM" {{ old('products.0.type_of_sale') === 'FDM' ? 'selected' : '' }}>FDM</option>
+                                    <option value="WFS" {{ old('products.0.type_of_sale') === 'WFS' ? 'selected' : '' }}>WFS</option>
+                                </select>
+                            </div>
+                            <div class="col-span-12 sm:col-span-5">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Image (Optional)</label>
+                                <input type="file" name="products[0][image]" accept="image/*"
+                                       class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                            </div>
+                            <div class="col-span-12 sm:col-span-5">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL (Optional)</label>
+                                <input type="url" name="products[0][link_url]" placeholder="https://..." value="{{ old('products.0.link_url') }}"
+                                       class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                             </div>
                         </div>
                     </div>
@@ -74,7 +94,6 @@
                 <input type="text" name="category" value="{{ old('category') }}"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
-            
             
             
             <div>
@@ -140,10 +159,16 @@
                     const name = row.querySelector('input[name$="[name]"]');
                     const desc = row.querySelector('input[name$="[description]"]');
                     const qty = row.querySelector('input[name$="[quantity]"]');
+                    const typeOfSale = row.querySelector('select[name$="[type_of_sale]"]');
+                    const image = row.querySelector('input[name$="[image]"]');
+                    const linkUrl = row.querySelector('input[name$="[link_url]"]');
 
                     if (name) name.name = `products[${idx}][name]`;
                     if (desc) desc.name = `products[${idx}][description]`;
                     if (qty) qty.name = `products[${idx}][quantity]`;
+                    if (typeOfSale) typeOfSale.name = `products[${idx}][type_of_sale]`;
+                    if (image) image.name = `products[${idx}][image]`;
+                    if (linkUrl) linkUrl.name = `products[${idx}][link_url]`;
 
                     // ensure remove button
                     let remove = row.querySelector('.remove-product');
@@ -174,12 +199,12 @@
                 div.className = 'product-row bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200';
                 div.innerHTML = `
                     <div class="grid grid-cols-12 gap-4">
-                        <div class="col-span-12 sm:col-span-5">
+                        <div class="col-span-12 sm:col-span-4">
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
                             <input type="text" name="products[${idx}][name]" placeholder="Enter product name" required
                                    class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                         </div>
-                        <div class="col-span-12 sm:col-span-5">
+                        <div class="col-span-12 sm:col-span-4">
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
                             <input type="text" name="products[${idx}][description]" placeholder="Product description (optional)"
                                    class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
@@ -190,6 +215,26 @@
                                    class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-semibold text-center"
                                    oninvalid="this.setCustomValidity('Quantity is required and must be at least 1')"
                                    oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-span-12 sm:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
+                            <select name="products[${idx}][type_of_sale]"
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                <option value="">Select</option>
+                                <option value="FDA">FDA</option>
+                                <option value="FDM">FDM</option>
+                                <option value="WFS">WFS</option>
+                            </select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-5">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Image (Optional)</label>
+                            <input type="file" name="products[${idx}][image]" accept="image/*"
+                                   class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                        </div>
+                        <div class="col-span-12 sm:col-span-5">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL (Optional)</label>
+                            <input type="url" name="products[${idx}][link_url]" placeholder="https://..."
+                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                         </div>
                     </div>
                 `;

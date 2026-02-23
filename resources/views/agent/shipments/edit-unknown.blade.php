@@ -30,15 +30,25 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Assign to Client (Optional)</label>
-                <select name="client_id"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <option value="">-- Unassigned --</option>
-                    @foreach($clients as $client)
-                        <option value="{{ $client->id }}" {{ (old('client_id', $shipment->client_id) == $client->id) ? 'selected' : '' }}>
-                            {{ $client->name }} ({{ $client->email }})
-                        </option>
-                    @endforeach
-                </select>
+                <div class="relative">
+                    <input type="text" id="client-search" placeholder="Search by client name or group ID..." 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <input type="hidden" name="client_id" id="client-id-input" value="{{ old('client_id', $shipment->client_id) }}">
+                    <div id="client-dropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div class="p-2 hover:bg-purple-50 cursor-pointer client-option" data-id="" data-name="-- Unassigned --">
+                            <div class="font-medium text-gray-700">-- Unassigned --</div>
+                        </div>
+                        @foreach($clients as $client)
+                        <div class="p-2 hover:bg-purple-50 cursor-pointer client-option border-t" 
+                            data-id="{{ $client->id }}" 
+                            data-name="{{ $client->name }}" 
+                            data-group="{{ $client->group_id }}">
+                            <div class="font-medium text-gray-900">{{ $client->name }}</div>
+                            <div class="text-xs text-gray-500">Group ID: {{ $client->group_id }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
                 <p class="text-sm text-gray-500 mt-1">Leave unassigned if client information is not available</p>
             </div>
             
@@ -189,7 +199,7 @@
             <div id="line-items-container" class="space-y-3">
                 @foreach($shipment->lineItems as $lineItem)
                 <div class="flex items-center gap-3">
-                    <input type="text" name="line_items[]" value="{{ $lineItem->barcode_value }}" placeholder="Scan barcode..." 
+                    <input type="text" name="line_items[]" value="{{ $lineItem->barcode }}" placeholder="Scan barcode..." 
                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                     <button type="button" class="remove-line-item text-sm bg-red-100 text-red-700 px-3 py-2 rounded">Remove</button>
                 </div>
@@ -213,6 +223,59 @@
 
 <script>
     (function () {
+        // Searchable client select
+        const clientSearch = document.getElementById('client-search');
+        const clientIdInput = document.getElementById('client-id-input');
+        const clientDropdown = document.getElementById('client-dropdown');
+        const clientOptions = document.querySelectorAll('.client-option');
+
+        if (clientSearch && clientDropdown) {
+            // Show dropdown on focus
+            clientSearch.addEventListener('focus', () => {
+                clientDropdown.classList.remove('hidden');
+            });
+
+            // Filter options as user types
+            clientSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                clientDropdown.classList.remove('hidden');
+                clientOptions.forEach(option => {
+                    const name = option.dataset.name?.toLowerCase() || '';
+                    const group = option.dataset.group?.toLowerCase() || '';
+                    if (name.includes(searchTerm) || group.includes(searchTerm)) {
+                        option.classList.remove('hidden');
+                    } else {
+                        option.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Handle option selection
+            clientOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    clientIdInput.value = option.dataset.id;
+                    clientSearch.value = option.dataset.name;
+                    clientDropdown.classList.add('hidden');
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!clientSearch.contains(e.target) && !clientDropdown.contains(e.target)) {
+                    clientDropdown.classList.add('hidden');
+                }
+            });
+
+            // Set initial value if exists
+            const initialClientId = clientIdInput.value;
+            if (initialClientId) {
+                const selectedOption = Array.from(clientOptions).find(opt => opt.dataset.id === initialClientId);
+                if (selectedOption) {
+                    clientSearch.value = selectedOption.dataset.name;
+                }
+            }
+        }
+
         // Product list management
         const productsList = document.getElementById('products-list');
         const addProductBtn = document.getElementById('add-product');

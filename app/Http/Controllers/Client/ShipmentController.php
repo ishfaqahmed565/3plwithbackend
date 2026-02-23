@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
+use App\Notifications\ClientShipmentCreatedNotification;
+use App\Notifications\TrackingIdUpdatedNotification;
 use App\Services\ShipmentService;
 use App\Models\ShipmentAttachment;
 use Illuminate\Support\Arr;
 use App\Models\ShipmentProduct;
 use App\Models\Shipment;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +43,9 @@ class ShipmentController extends Controller
             'products.*.name' => 'required|string|max:255',
             'products.*.description' => 'nullable|string',
             'products.*.quantity' => 'required|integer|min:1',
+            'products.*.type_of_sale' => 'nullable|in:FDA,FDM,WFS',
+            'products.*.image' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:5120',
+            'products.*.link_url' => 'nullable|url|max:500',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
             //'quantity_total' => 'required|integer|min:1',
@@ -64,12 +71,45 @@ class ShipmentController extends Controller
 
         $validated['client_id'] = Auth::guard('client')->id();
 
+        // Process products to include uploaded images
+        $productsWithImages = [];
+        if (isset($validated['products'])) {
+            foreach ($validated['products'] as $index => $product) {
+                $productsWithImages[] = [
+                    'name' => $product['name'],
+                    'description' => $product['description'] ?? null,
+                    'quantity' => $product['quantity'],
+                    'type_of_sale' => $product['type_of_sale'] ?? null,
+                    'image' => $request->file("products.{$index}.image"),
+                    'link_url' => $product['link_url'] ?? null,
+                ];
+            }
+        }
+
         $shipment = $this->shipmentService->createShipment(
             $validated,
             $request->file('product_image'),
             $request->file('attachments', []),
-            $validated['products'] ?? []
+            $productsWithImages
         );
+
+        // Send notification to admins (database) and email to warehouse
+        try {
+            // Store notification in database for all admins
+            foreach (Admin::all() as $admin) {
+                $admin->notify(new ClientShipmentCreatedNotification($shipment->fresh('products')));
+            }
+
+            // Send email to warehouse notification address
+            if (env('WAREHOUSE_NOTIFICATION_EMAIL')) {
+                Mail::send('mail.notifications.client-shipment-created', ['shipment' => $shipment->fresh('products')], function ($message) {
+                    $tos = explode(',', env('WAREHOUSE_NOTIFICATION_EMAIL'));
+                    $message->to($tos)->subject('New Shipment Created by Client');
+                });
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send client shipment created notification: ' . $e->getMessage());
+        }
 
         return redirect()->route('client.shipments.index')
             ->with('success', 'Shipment created successfully! Code: ' . $shipment->shipment_code);
@@ -91,6 +131,7 @@ class ShipmentController extends Controller
     public function update(Request $request, $id)
     {
         $shipment = Auth::guard('client')->user()->shipments()->with('attachments')->findOrFail($id);
+        $oldTrackingId = $shipment->tracking_id;
 
         $validated = $request->validate([
             'source' => 'required|string|max:255',
@@ -109,6 +150,37 @@ class ShipmentController extends Controller
         ]);
 
         $shipment->update(Arr::except($validated, ['remove_attachments']));
+
+        // Check if tracking ID was updated
+        $trackingIdUpdated = isset($validated['tracking_id']) && 
+                             $validated['tracking_id'] !== $oldTrackingId;
+
+        if ($trackingIdUpdated) {
+            try {
+                // Store notification in database for all admins
+                foreach (Admin::all() as $admin) {
+                    $admin->notify(new TrackingIdUpdatedNotification(
+                        $shipment->fresh('products'),
+                        $oldTrackingId,
+                        $validated['tracking_id']
+                    ));
+                }
+
+                // Send email to warehouse notification address
+                if (env('WAREHOUSE_NOTIFICATION_EMAIL')) {
+                    Mail::send('mail.notifications.tracking-id-updated', [
+                        'shipment' => $shipment->fresh('products'),
+                        'oldTrackingId' => $oldTrackingId,
+                        'newTrackingId' => $validated['tracking_id']
+                    ], function ($message) {
+                        $tos = explode(',', env('WAREHOUSE_NOTIFICATION_EMAIL'));
+                        $message->to($tos)->subject('Tracking ID Updated - ' . request()->route('id'));
+                    });
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send tracking ID updated notification: ' . $e->getMessage());
+            }
+        }
 
         if ($request->filled('remove_attachments')) {
             $attachmentsToRemove = ShipmentAttachment::where('shipment_id', $shipment->id)
