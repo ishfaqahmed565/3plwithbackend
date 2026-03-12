@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shipments', function (Blueprint $table) {
-            $table->enum('type_of_sale', ['FDA', 'FDM', 'WFS'])->nullable()->after('delivery_partner');
+            $table->string('type_of_sale')->nullable()->after('delivery_partner');
         });
 
         Schema::table('shipment_products', function (Blueprint $table) {

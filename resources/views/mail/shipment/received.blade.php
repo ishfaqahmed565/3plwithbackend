@@ -138,7 +138,7 @@
             display: inline-block;
             padding: 12px 30px;
             background-color: #9333ea;
-            color: #ffffff;
+            color: #ffffff !important;
             text-decoration: none;
             border-radius: 6px;
             font-weight: 600;

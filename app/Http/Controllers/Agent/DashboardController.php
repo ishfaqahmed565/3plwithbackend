@@ -94,7 +94,7 @@ class DashboardController extends Controller
             'category' => 'nullable|string|max:255',
             'tracking_id' => 'required|string|max:255|unique:shipments,tracking_id',
             'delivery_partner' => 'required|in:FEDEX,UPS,AMAZON,USPS,DHL,Other',
-            'type_of_sale' => 'nullable|in:FDA,FDM,WFS',
+            'type_of_sale' => 'nullable|in:FBA,FBM,WFS',
             'rack_location' => 'nullable|string|max:255',
             'scan1_notes' => 'nullable|string',
             'scan1_files' => 'required|array|min:1',

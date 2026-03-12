@@ -30,11 +30,17 @@
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
                                 <input type="text" name="products[0][name]" placeholder="Enter product name" required value="{{ old('products.0.name') }}"
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                @error('products.0.name')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="col-span-12 sm:col-span-4">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
                                 <input type="text" name="products[0][description]" placeholder="Product description (optional)" value="{{ old('products.0.description') }}"
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                @error('products.0.description')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="col-span-12 sm:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
@@ -42,29 +48,107 @@
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-semibold text-center"
                                        oninvalid="this.setCustomValidity('Quantity is required and must be at least 1')"
                                        oninput="this.setCustomValidity('')">
+                                @error('products.0.quantity')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="col-span-12 sm:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
                                 <select name="products[0][type_of_sale]"
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                     <option value="">Select</option>
-                                    <option value="FDA" {{ old('products.0.type_of_sale') === 'FDA' ? 'selected' : '' }}>FDA</option>
-                                    <option value="FDM" {{ old('products.0.type_of_sale') === 'FDM' ? 'selected' : '' }}>FDM</option>
+                                    <option value="FBA" {{ old('products.0.type_of_sale') === 'FBA' ? 'selected' : '' }}>FBA</option>
+                                    <option value="FBM" {{ old('products.0.type_of_sale') === 'FBM' ? 'selected' : '' }}>FBM</option>
                                     <option value="WFS" {{ old('products.0.type_of_sale') === 'WFS' ? 'selected' : '' }}>WFS</option>
                                 </select>
+                                @error('products.0.type_of_sale')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="col-span-12 sm:col-span-5">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Image (Optional)</label>
                                 <input type="file" name="products[0][image]" accept="image/*"
                                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                                @error('products.0.image')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="col-span-12 sm:col-span-5">
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL (Optional)</label>
                                 <input type="url" name="products[0][link_url]" placeholder="https://..." value="{{ old('products.0.link_url') }}"
                                        class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                @error('products.0.link_url')
+                                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                     </div>
+                    
+                    @if(old('products'))
+                        @foreach(old('products') as $index => $product)
+                            @if($index > 0)
+                                <div class="product-row bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                    <div class="grid grid-cols-12 gap-4">
+                                        <div class="col-span-12 sm:col-span-4">
+                                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Product Name</label>
+                                            <input type="text" name="products[{{ $index }}][name]" placeholder="Enter product name" required value="{{ $product['name'] ?? '' }}"
+                                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                            @error("products.{$index}.name")
+                                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div class="col-span-12 sm:col-span-4">
+                                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
+                                            <input type="text" name="products[{{ $index }}][description]" placeholder="Product description (optional)" value="{{ $product['description'] ?? '' }}"
+                                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                            @error("products.{$index}.description")
+                                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div class="col-span-12 sm:col-span-2">
+                                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Quantity</label>
+                                            <input type="number" name="products[{{ $index }}][quantity]" min="1" required value="{{ $product['quantity'] ?? 1 }}"
+                                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 font-semibold text-center"
+                                                   oninvalid="this.setCustomValidity('Quantity is required and must be at least 1')"
+                                                   oninput="this.setCustomValidity('')">
+                                            @error("products.{$index}.quantity")
+                                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div class="col-span-12 sm:col-span-2">
+                                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Type of Sale</label>
+                                            <select name="products[{{ $index }}][type_of_sale]"
+                                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                                <option value="">Select</option>
+                                                <option value="FBA" {{ ($product['type_of_sale'] ?? '') === 'FBA' ? 'selected' : '' }}>FBA</option>
+                                                <option value="FBM" {{ ($product['type_of_sale'] ?? '') === 'FBM' ? 'selected' : '' }}>FBM</option>
+                                                <option value="WFS" {{ ($product['type_of_sale'] ?? '') === 'WFS' ? 'selected' : '' }}>WFS</option>
+                                            </select>
+                                            @error("products.{$index}.type_of_sale")
+                                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div class="col-span-12 sm:col-span-5">
+                                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Image (Optional)</label>
+                                            <input type="file" name="products[{{ $index }}][image]" accept="image/*"
+                                                   class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-sm">
+                                            @error("products.{$index}.image")
+                                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div class="col-span-12 sm:col-span-5">
+                                            <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Link URL (Optional)</label>
+                                            <input type="url" name="products[{{ $index }}][link_url]" placeholder="https://..." value="{{ $product['link_url'] ?? '' }}"
+                                                   class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                                            @error("products.{$index}.link_url")
+                                                <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    @endif
                 </div>
                 <div class="mt-4">
                     <button type="button" id="add-product" 
@@ -90,7 +174,7 @@
             </div>
             
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category (Optional)</label>
                 <input type="text" name="category" value="{{ old('category') }}"
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
             </div>
@@ -221,8 +305,8 @@
                             <select name="products[${idx}][type_of_sale]"
                                    class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                 <option value="">Select</option>
-                                <option value="FDA">FDA</option>
-                                <option value="FDM">FDM</option>
+                                <option value="FBA">FBA</option>
+                                <option value="FBM">FBM</option>
                                 <option value="WFS">WFS</option>
                             </select>
                         </div>

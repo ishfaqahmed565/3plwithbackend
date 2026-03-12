@@ -55,8 +55,8 @@
                                         <select name="products[{{ $i }}][type_of_sale]"
                                                 class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                             <option value="">Select</option>
-                                            <option value="FDA" {{ ($p['type_of_sale'] ?? '') === 'FDA' ? 'selected' : '' }}>FDA</option>
-                                            <option value="FDM" {{ ($p['type_of_sale'] ?? '') === 'FDM' ? 'selected' : '' }}>FDM</option>
+                                            <option value="FBA" {{ ($p['type_of_sale'] ?? '') === 'FBA' ? 'selected' : '' }}>FBA</option>
+                                            <option value="FBM" {{ ($p['type_of_sale'] ?? '') === 'FBM' ? 'selected' : '' }}>FBM</option>
                                             <option value="WFS" {{ ($p['type_of_sale'] ?? '') === 'WFS' ? 'selected' : '' }}>WFS</option>
                                         </select>
                                     </div>
@@ -99,8 +99,8 @@
                                         <select name="products[{{ $i }}][type_of_sale]"
                                                 class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                             <option value="">Select</option>
-                                            <option value="FDA" {{ $prod->type_of_sale === 'FDA' ? 'selected' : '' }}>FDA</option>
-                                            <option value="FDM" {{ $prod->type_of_sale === 'FDM' ? 'selected' : '' }}>FDM</option>
+                                            <option value="FBA" {{ $prod->type_of_sale === 'FBA' ? 'selected' : '' }}>FBA</option>
+                                            <option value="FBM" {{ $prod->type_of_sale === 'FBM' ? 'selected' : '' }}>FBM</option>
                                             <option value="WFS" {{ $prod->type_of_sale === 'WFS' ? 'selected' : '' }}>WFS</option>
                                         </select>
                                     </div>
@@ -368,8 +368,8 @@
                             <select name="products[${idx}][type_of_sale]"
                                     class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
                                 <option value="">Select</option>
-                                <option value="FDA">FDA</option>
-                                <option value="FDM">FDM</option>
+                                <option value="FBA">FBA</option>
+                                <option value="FBM">FBM</option>
                                 <option value="WFS">WFS</option>
                             </select>
                         </div>

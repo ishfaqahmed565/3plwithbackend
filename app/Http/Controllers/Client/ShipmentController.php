@@ -43,7 +43,7 @@ class ShipmentController extends Controller
             'products.*.name' => 'required|string|max:255',
             'products.*.description' => 'nullable|string',
             'products.*.quantity' => 'required|integer|min:1',
-            'products.*.type_of_sale' => 'nullable|in:FDA,FDM,WFS',
+            'products.*.type_of_sale' => 'nullable|in:FBA,FBM,WFS',
             'products.*.image' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:5120',
             'products.*.link_url' => 'nullable|url|max:500',
             'attachments' => 'nullable|array',
